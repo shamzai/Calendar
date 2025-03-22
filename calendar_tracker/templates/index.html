@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Diverse Calendar Tracker</title>
+
+  <!-- Bootstrap CSS -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+  
+  <!-- FullCalendar CSS -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css"
+    rel="stylesheet"
+  >
+  
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <!-- Main Container -->
+  <div class="container py-4">
+    <h1 class="mb-4">Diverse Calendar Tracker</h1>
+
+    <!-- Card: Habit Submission Form -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <form id="habitForm" class="row g-3">
+          <div class="col-md-4">
+            <label for="date" class="form-label">Date:</label>
+            <input
+              type="date"
+              id="date"
+              name="date"
+              class="form-control"
+              required
+            >
+          </div>
+          <div class="col-md-6">
+            <label for="habit" class="form-label">Habit:</label>
+            <input
+              type="text"
+              id="habit"
+              name="habit"
+              class="form-control"
+              placeholder="e.g., Exercise"
+              required
+            >
+          </div>
+          <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">Add Habit</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Card: Calendar Container -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <div id="calendar"></div>
+      </div>
+    </div>
+
+    <!-- Card: Guidance Section -->
+    <div class="card">
+      <div class="card-body">
+        <h2 class="card-title">Guidance</h2>
+        <p id="suggestions" class="card-text">
+          Keep tracking your habits to get personalized suggestions!
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Chatbot Icon -->
+  <div id="chatbot-icon" class="chatbot-icon">
+    <img
+      src="https://cdn-icons-png.flaticon.com/512/1077/1077012.png"
+      alt="Chatbot"
+    />
+  </div>
+
+  <!-- Chatbot Modal -->
+  <div class="modal fade" id="chatbotModal" tabindex="-1" aria-labelledby="chatbotModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="chatbotModalLabel">Chat with Assistant</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div id="chat-messages" class="chat-messages"></div>
+          <div class="chat-input-container">
+            <input type="text" id="chat-input" class="form-control" placeholder="Type your message...">
+            <button id="send-message" class="btn btn-primary">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap Modal for Editing/Deleting an Event -->
+  <div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="editEventModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h5 class="modal-title" id="editEventModalLabel">Edit Event</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <!-- Modal Body: Form Fields -->
+        <div class="modal-body">
+          <form id="editEventForm">
+            <div class="mb-3">
+              <label for="editEventTitle" class="form-label">Habit / Title</label>
+              <input type="text" class="form-control" id="editEventTitle" required>
+            </div>
+            <div class="mb-3">
+              <label for="editEventDate" class="form-label">Date</label>
+              <input type="date" class="form-control" id="editEventDate" required>
+            </div>
+          </form>
+        </div>
+
+        <!-- Modal Footer: Action Buttons -->
+        <div class="modal-footer">
+          <!-- Delete button -->
+          <button type="button" class="btn btn-danger" id="deleteEventBtn">Delete</button>
+          <!-- Save (reschedule/edit) button -->
+          <button type="button" class="btn btn-primary" id="saveEventBtn">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS (required for the modal) -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js">
+  </script>
+
+  <!-- FullCalendar JS -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js">
+  </script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      /**************************************************
+       * 1. Initialize FullCalendar
+       **************************************************/
+      var calendarEl = document.getElementById('calendar');
+      var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        events: '/habits',  // Fetch events from Flask endpoint
+        editable: true,     // Allows drag-and-drop
+
+        eventClick: function(info) {
+          // Store the clicked event in a global variable for modal usage
+          window.currentEvent = info.event;
+
+          // Pre-fill the modal fields
+          document.getElementById('editEventTitle').value = info.event.title;
+          let currentDate = info.event.start;
+          let formattedDate = currentDate.toISOString().split('T')[0];
+          document.getElementById('editEventDate').value = formattedDate;
+
+          // Show the modal
+          var editModal = new bootstrap.Modal(document.getElementById('editEventModal'));
+          editModal.show();
+        },
+
+        eventDrop: function(info) {
+          // Triggered when user drags an event to a new date
+          let newDate = info.event.start.toISOString().split('T')[0];
+
+          fetch('/updateHabit', {
+            method: 'POST',
+            body: new URLSearchParams({
+              'id': info.event.id,
+              'date': newDate,
+              'title': info.event.title
+            })
+          })
+          .then(response => {
+            if (response.ok) {
+              alert("Habit updated!");
+            } else {
+              alert("Error updating habit.");
+            }
+          });
+        }
+      });
+      calendar.render();
+
+      /**************************************************
+       * 2. Handle form submission (Add New Habit)
+       **************************************************/
+      document.getElementById('habitForm').addEventListener('submit', function(e) {
+        e.preventDefault(); // Prevent default form submission
+
+        var formData = new FormData(this);
+        fetch('/addHabit', {
+          method: 'POST',
+          body: formData
+        }).then(response => {
+          if (response.ok) {
+            calendar.refetchEvents(); // Refresh calendar
+            document.getElementById('suggestions').innerText =
+              'Great job adding a new habit! Keep it up!';
+          } else {
+            document.getElementById('suggestions').innerText =
+              'Error adding habit.';
+          }
+        });
+      });
+
+      /**************************************************
+       * 3. Chatbot Functionality
+       **************************************************/
+      const chatMessages = document.getElementById('chat-messages');
+      const chatInput = document.getElementById('chat-input');
+      const sendButton = document.getElementById('send-message');
+      
+      // Show chat modal when icon is clicked
+      document.getElementById('chatbot-icon').addEventListener('click', function() {
+        var chatModal = new bootstrap.Modal(document.getElementById('chatbotModal'));
+        chatModal.show();
+        
+        // Add welcome message if chat is empty
+        if (chatMessages.children.length === 0) {
+          addMessage("Hi! I'm your habit tracking assistant. How can I help you today?", 'bot');
+        }
+      });
+
+      // Send message on button click or enter key
+      function sendMessage() {
+        const message = chatInput.value.trim();
+        if (message) {
+          addMessage(message, 'user');
+          chatInput.value = '';
+          
+          // Process user message and get bot response
+          fetch('/chat', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ message: message })
+          })
+          .then(response => response.json())
+          .then(data => {
+            addMessage(data.response, 'bot');
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            addMessage("Sorry, I'm having trouble responding right now.", 'bot');
+          });
+        }
+      }
+
+      sendButton.addEventListener('click', sendMessage);
+      chatInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          sendMessage();
+        }
+      });
+
+      function addMessage(text, sender) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `chat-message ${sender}-message`;
+        messageDiv.textContent = text;
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+
+      /**************************************************
+       * 4. Modal Buttons: Delete & Save
+       **************************************************/
+      // DELETE
+      document.getElementById('deleteEventBtn').addEventListener('click', function() {
+        let eventId = window.currentEvent.id;
+
+        fetch('/removeHabit', {
+          method: 'POST',
+          body: new URLSearchParams({ 'id': eventId })
+        })
+        .then(response => {
+          if (response.ok) {
+            calendar.refetchEvents();
+            alert("Habit removed!");
+          } else {
+            alert("Error removing habit.");
+          }
+        })
+        .finally(() => {
+          // Hide the modal
+          var editModal = bootstrap.Modal.getInstance(document.getElementById('editEventModal'));
+          editModal.hide();
+        });
+      });
+
+      // SAVE (Reschedule or Edit)
+      document.getElementById('saveEventBtn').addEventListener('click', function() {
+        let newTitle = document.getElementById('editEventTitle').value;
+        let newDate  = document.getElementById('editEventDate').value;
+        let eventId  = window.currentEvent.id;
+
+        fetch('/updateHabit', {
+          method: 'POST',
+          body: new URLSearchParams({
+            'id': eventId,
+            'date': newDate,
+            'title': newTitle
+          })
+        })
+        .then(response => {
+          if (response.ok) {
+            alert("Habit updated!");
+            calendar.refetchEvents();
+          } else {
+            alert("Error updating habit.");
+          }
+        })
+        .finally(() => {
+          // Hide the modal
+          var editModal = bootstrap.Modal.getInstance(document.getElementById('editEventModal'));
+          editModal.hide();
+        });
+      });
+    });
+  </script>
+</body>
+</html>
