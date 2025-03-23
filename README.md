@@ -88,7 +88,7 @@ TimeWise was conceived with global impact in mind, aligning with:
   Django, Flask
 
 ## Project Structure
-
+```bash
 CALENDAR_TRACKER/
 ├── .venv/                    # Python virtual environment (optional)
 ├── flask_session/            # Flask session files (if configured)
@@ -123,7 +123,7 @@ CALENDAR_TRACKER/
 ├── habits.db                 # SQLite database file (if applicable)
 └── README.md                 # Project documentation
 
-
+```
 ## Timeline & Future Vision ⏳
 
 **Hackathon Journey:**  
