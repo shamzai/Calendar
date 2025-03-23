@@ -1,0 +1,185 @@
+/* Music Player Container */
+.music-player {
+    background-color: var(--background-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Track Info */
+.track-info {
+    text-align: center;
+    min-height: 60px;
+}
+
+.track-title {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+}
+
+.track-artist {
+    color: var(--secondary-color);
+    font-size: 0.9rem;
+}
+
+/* Spotify Connect Button */
+.spotify-connect {
+    text-align: center;
+    padding: 1rem 0;
+}
+
+.btn-spotify {
+    background-color: #1DB954;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+.btn-spotify:hover {
+    background-color: #1ed760;
+    transform: translateY(-2px);
+    color: white;
+    text-decoration: none;
+}
+
+/* Player Controls */
+.music-player-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Progress Bar */
+.progress-bar {
+    width: 100%;
+    height: 4px;
+    background-color: var(--border-color);
+    border-radius: 2px;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.progress-current {
+    height: 100%;
+    background-color: var(--primary-color);
+    transition: width 0.1s linear;
+}
+
+/* Player Buttons */
+.player-buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.player-button {
+    background: none;
+    border: none;
+    color: var(--text-color);
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+.player-button:hover {
+    background-color: var(--border-color);
+    transform: scale(1.1);
+}
+
+.play-pause {
+    width: 48px;
+    height: 48px;
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.play-pause:hover {
+    background-color: var(--hover-color);
+}
+
+/* Volume Control */
+.volume-control {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem;
+    color: var(--text-color);
+}
+
+.volume-slider {
+    flex: 1;
+    height: 4px;
+    -webkit-appearance: none;
+    background-color: var(--border-color);
+    border-radius: 2px;
+    outline: none;
+}
+
+.volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.volume-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+/* Dark Mode Adjustments */
+.dark-mode .music-player {
+    background-color: var(--card-bg);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .music-player {
+        padding: 1rem;
+    }
+
+    .player-buttons {
+        gap: 1rem;
+    }
+
+    .player-button {
+        width: 36px;
+        height: 36px;
+    }
+
+    .play-pause {
+        width: 44px;
+        height: 44px;
+    }
+}
+
+@media (max-width: 480px) {
+    .track-title {
+        font-size: 1rem;
+    }
+
+    .track-artist {
+        font-size: 0.8rem;
+    }
+
+    .volume-control {
+        padding: 0.25rem;
+    }
+}

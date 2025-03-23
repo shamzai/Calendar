@@ -1,0 +1,220 @@
+/* Clock Container */
+.clock-display {
+    width: 100%;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    position: relative;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.clock-display.visible {
+    opacity: 1;
+}
+
+/* Digital Clock */
+.digital-clock {
+    text-align: center;
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.digital-clock.visible {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.digital-clock .time {
+    font-size: 3rem;
+    font-weight: 600;
+    font-family: var(--font-family-sans);
+    color: var(--text-color);
+    margin-bottom: 0.5rem;
+    letter-spacing: 2px;
+}
+
+.digital-clock .date {
+    font-size: 1.1rem;
+    color: var(--secondary-color);
+    margin-bottom: 1rem;
+}
+
+/* Format Toggle Button */
+.format-toggle {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    padding: 0.5rem;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.2s, background-color 0.2s;
+}
+
+.format-toggle:hover {
+    background-color: var(--border-color);
+    transform: scale(1.1);
+}
+
+.format-toggle.clicked {
+    transform: scale(0.9);
+}
+
+/* Analog Clock */
+.analog-clock {
+    width: 200px;
+    height: 200px;
+    border: 2px solid var(--border-color);
+    border-radius: 50%;
+    position: relative;
+    background-color: var(--background-color);
+    opacity: 0;
+    transform: scale(0.9);
+    transition: opacity 0.3s ease, transform 0.3s ease, background-color 0.3s;
+}
+
+.analog-clock.visible {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Clock Numbers */
+.clock-number {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    line-height: 24px;
+    font-weight: 500;
+    color: var(--text-color);
+    transform-origin: center;
+    transition: color 0.3s;
+}
+
+/* Clock Hands */
+.clock-hand {
+    position: absolute;
+    bottom: 50%;
+    left: 50%;
+    transform-origin: bottom;
+    border-radius: 4px;
+    transition: transform 0.1s cubic-bezier(0.4, 2.08, 0.55, 0.44);
+}
+
+.hour-hand {
+    width: 4px;
+    height: 30%;
+    background-color: var(--text-color);
+    transform: translateX(-50%);
+}
+
+.minute-hand {
+    width: 3px;
+    height: 40%;
+    background-color: var(--text-color);
+    transform: translateX(-50%);
+}
+
+.second-hand {
+    width: 2px;
+    height: 45%;
+    background-color: var(--primary-color);
+    transform: translateX(-50%);
+}
+
+/* Clock Mode Toggle */
+.clock-toggle {
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.toggle-label {
+    color: var(--text-color);
+    font-size: 0.9rem;
+}
+
+#clockToggle {
+    appearance: none;
+    width: 40px;
+    height: 20px;
+    background-color: var(--border-color);
+    border-radius: 10px;
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#clockToggle:checked {
+    background-color: var(--primary-color);
+}
+
+#clockToggle::before {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    background-color: white;
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.3s;
+}
+
+#clockToggle:checked::before {
+    transform: translateX(20px);
+}
+
+/* Dark Mode Adjustments */
+.dark-mode .analog-clock {
+    border-color: var(--border-color);
+    background-color: var(--card-bg);
+}
+
+.dark-mode .clock-hand {
+    background-color: var(--text-color);
+}
+
+.dark-mode .second-hand {
+    background-color: var(--primary-color);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .digital-clock .time {
+        font-size: 2.5rem;
+    }
+
+    .digital-clock .date {
+        font-size: 1rem;
+    }
+
+    .analog-clock {
+        width: 180px;
+        height: 180px;
+    }
+}
+
+@media (max-width: 480px) {
+    .digital-clock .time {
+        font-size: 2rem;
+    }
+
+    .digital-clock .date {
+        font-size: 0.9rem;
+    }
+
+    .analog-clock {
+        width: 160px;
+        height: 160px;
+    }
+
+    .clock-number {
+        font-size: 0.9rem;
+    }
+}

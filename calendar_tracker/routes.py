@@ -1,10 +1,84 @@
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request, jsonify, session, redirect, url_for
 from datetime import datetime
 from services.gemini_service import GeminiService
+from services.spotify_service import SpotifyService
 from utils import get_db_connection, analyze_sentiment
 
 main_bp = Blueprint('main', __name__)
-gemini_service = GeminiService()
+
+# Initialize services
+try:
+    gemini_service = GeminiService()
+    print("Gemini service initialized successfully")
+except Exception as e:
+    print(f"Warning: Gemini service initialization failed - {str(e)}")
+    gemini_service = None
+
+try:
+    spotify_service = SpotifyService()
+    print("Spotify service initialized successfully")
+except Exception as e:
+    print(f"Warning: Spotify service initialization failed - {str(e)}")
+    spotify_service = None
+
+# Spotify routes
+@main_bp.route('/spotify/auth')
+def spotify_auth():
+    """Initiate Spotify OAuth flow"""
+    if not spotify_service:
+        return jsonify({'error': 'Spotify service not available'}), 503
+    return redirect(spotify_service.get_auth_url())
+
+@main_bp.route('/callback')
+def spotify_callback():
+    """Handle Spotify OAuth callback"""
+    if not spotify_service:
+        return jsonify({'error': 'Spotify service not available'}), 503
+        
+    code = request.args.get('code')
+    if not code:
+        return jsonify({'error': 'No code provided'}), 400
+        
+    try:
+        token_info = spotify_service.get_token(code)
+        session['spotify_token'] = token_info
+        return redirect(url_for('main.index'))
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
+
+@main_bp.route('/spotify/playback/<action>', methods=['POST'])
+def spotify_playback(action):
+    """Control Spotify playback"""
+    if not spotify_service:
+        return jsonify({'error': 'Spotify service not available'}), 503
+        
+    token_info = session.get('spotify_token')
+    if not token_info:
+        return jsonify({'error': 'Not authenticated'}), 401
+        
+    try:
+        sp = spotify_service.get_client(token_info['access_token'])
+        device_id = request.json.get('device_id')
+        
+        if action == 'state':
+            state = spotify_service.get_current_playback(sp)
+            return jsonify(state if state else {'error': 'No active playback'})
+            
+        elif action == 'volume':
+            volume = request.json.get('volume')
+            if volume is not None:
+                spotify_service.set_volume(sp, volume)
+                return jsonify({'success': True})
+            return jsonify({'error': 'No volume specified'}), 400
+            
+        elif action in ['play', 'pause', 'next', 'previous']:
+            success = spotify_service.control_playback(sp, action, device_id)
+            return jsonify({'success': success})
+            
+        return jsonify({'error': 'Invalid action'}), 400
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @main_bp.route('/')
 def index():
@@ -312,6 +386,16 @@ def chat():
         progress = f"Completed {completed}/{total} habits ({completion_rate:.1f}% success rate) in the past week"
 
     # Get AI response with context
+    if gemini_service is None:
+        # Use fallback responses if service isn't initialized
+        if "hello" in message or "hi" in message:
+            response = "Hello! I'm running in fallback mode right now, but I can still help with basic tasks! 👋"
+        elif "schedule" in message or "calendar" in message:
+            response = "I can help you manage your schedule, but some features might be limited at the moment. What would you like to do? 📅"
+        else:
+            response = "I'm currently operating in fallback mode with limited capabilities. I can still help with scheduling and basic tasks! 🤖"
+        return jsonify({'response': response})
+        
     try:
         response = gemini_service.get_response(
             message=message,
@@ -321,6 +405,8 @@ def chat():
         return jsonify({'response': response})
     except Exception as e:
         print(f"Error in chat: {str(e)}")
+        with open('gemini_errors.log', 'a') as f:
+            f.write(f"[{datetime.now()}] Chat Error: {str(e)}\n")
         return jsonify({
-            'response': "I apologize, but I'm having trouble responding right now. Please try again. 🙏"
-        }), 500
+            'response': "I'm having some trouble with my advanced features, but I'm still here to help with basic tasks! How can I assist you? 🤖"
+        }), 200  # Return 200 to maintain user experience

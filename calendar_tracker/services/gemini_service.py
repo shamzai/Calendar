@@ -49,23 +49,96 @@ class GeminiService:
     }
 
     def __init__(self):
-        api_key = os.getenv('GEMINI_API_KEY')
-        if not api_key:
-            print("Warning: GEMINI_API_KEY not found. Using fallback responses.")
-            self.use_fallback = True
-            return
+        self.api_key = os.getenv('GEMINI_API_KEY')
+        if not self.api_key:
+            raise ValueError("GEMINI_API_KEY not found in environment variables")
         
+        if not self.validate_api_key(self.api_key):
+            raise ValueError("Invalid Gemini API key format")
+
         try:
-            genai.configure(api_key=api_key)
-            self.model = genai.GenerativeModel('gemini-pro')
+            # Configure with safety settings
+            genai.configure(api_key=self.api_key)
+            
+            # List available models first
+            try:
+                models = genai.list_models()
+                available_models = [m.name for m in models]
+                print(f"Available models: {available_models}")
+                
+                if "models/gemini-pro" not in available_models:
+                    raise Exception("gemini-pro model not available")
+                    
+            except Exception as e:
+                print(f"Error listing models: {str(e)}")
+                raise Exception("Unable to access Gemini API models")
+            
+            # Initialize with safety settings
+            generation_config = {
+                "temperature": 0.9,
+                "top_p": 1,
+                "top_k": 1,
+                "max_output_tokens": 2048,
+            }
+            
+            safety_settings = [
+                {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+                {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+                {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+                {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+            ]
+            
+            self.model = genai.GenerativeModel(
+                model_name="gemini-pro",
+                generation_config=generation_config,
+                safety_settings=safety_settings
+            )
+            
+            # Test connection with retry
+            max_retries = 3
+            for attempt in range(max_retries):
+                try:
+                    test_response = self.model.generate_content("Test connection")
+                    if test_response and test_response.text:
+                        print(f"API Test successful (attempt {attempt + 1}): {test_response.text[:50]}...")
+                        break
+                except Exception as e:
+                    if attempt == max_retries - 1:
+                        raise e
+                    print(f"Attempt {attempt + 1} failed, retrying...")
+            
             self.chat = self.model.start_chat(history=[])
             self.use_fallback = False
-            
-            # Load chat history for context
             self.load_chat_history()
+            print("Successfully initialized Gemini AI service")
+            
         except Exception as e:
-            print(f"Error initializing Gemini AI: {str(e)}")
+            self.log_error("Error initializing Gemini AI", e)
             self.use_fallback = True
+            raise RuntimeError(f"Failed to initialize Gemini AI: {str(e)}")
+
+    def validate_api_key(self, key):
+        """Validate Gemini API key format"""
+        # TODO: Implement stricter validation when in production
+        if not key or len(key) < 10:  # Basic check to ensure key exists and has minimum length
+            return False
+        return True
+        
+    def log_error(self, message, error=None):
+        """Log errors with detailed information"""
+        error_msg = f"[{datetime.now()}] {message}"
+        if error:
+            error_msg += f": {str(error)}"
+            if hasattr(error, 'details'):
+                error_msg += f"\nDetails: {error.details}"
+                
+        print(error_msg)  # In production, use proper logging
+        
+        try:
+            with open('gemini_errors.log', 'a') as f:
+                f.write(error_msg + '\n')
+        except:
+            pass  # Fail silently if can't write to log file
 
     def load_chat_history(self, limit=10):
         """Load recent chat history for context"""
@@ -217,6 +290,7 @@ class GeminiService:
 
             context = self.get_context(user_habits, progress)
             
+            # Prepare prompt
             prompt = f"""
             Context: {context}
             
@@ -234,17 +308,25 @@ class GeminiService:
             6. Offer to schedule habits when appropriate
             """
 
+            # Generate response
             response = self.model.generate_content(prompt)
+            if not response or not response.text:
+                raise Exception("Empty response from Gemini API")
+                
             response_text = response.text
-            
-            # Save to chat history
             self.save_chat_history(message, response_text, context)
-            
             return response_text
 
         except Exception as e:
-            print(f"Error in Gemini service: {str(e)}")
-            return self._get_fallback_response(message, user_habits, progress)
+            error_msg = f"Error in Gemini service: {str(e)}"
+            self.log_error(error_msg, e)
+            
+            if "quota exceeded" in str(e).lower():
+                return "I'm currently busy with too many requests. Please try again in a moment. ⏳"
+            elif "invalid api key" in str(e).lower():
+                return "There seems to be an issue with my configuration. Please contact support. ⚠️"
+            else:
+                return self._get_fallback_response(message, user_habits, progress)
 
     def schedule_habit(self, habit, dt):
         """Schedule a new habit in the calendar"""
@@ -493,3 +575,24 @@ class GeminiService:
         elif context == 'achievement':
             return self.FALLBACK_RESPONSES['encouragement']['achievement']
         return self.FALLBACK_RESPONSES['motivation']['general']
+
+    def _get_fallback_response(self, message, user_habits=None, progress=None):
+        """Generate static fallback responses when API is unavailable"""
+        message = message.lower()
+        
+        # Check for greetings
+        if any(word in message for word in ['hello', 'hi', 'hey', 'good']):
+            return self.get_greeting()
+            
+        # Check for schedule-related queries
+        if any(word in message for word in ['schedule', 'plan', 'calendar', 'event']):
+            return "I can help you schedule habits and events, but I need some maintenance first. Please try again later. 🔧"
+            
+        # Check for progress/motivation queries
+        if any(word in message for word in ['progress', 'track', 'goal', 'achievement']):
+            if progress and 'completed' in progress.lower():
+                return self.FALLBACK_RESPONSES['encouragement']['achievement']
+            return self.FALLBACK_RESPONSES['motivation']['general']
+            
+        # Default response
+        return "I'm having trouble connecting to my main system, but I'm still here to help with basic tasks! What would you like to do? 🤖"

@@ -1,0 +1,153 @@
+:root {
+    /* Base Colors */
+    --primary-color: #007bff;
+    --secondary-color: #6c757d;
+    --success-color: #28a745;
+    --background-color: #ffffff;
+    --text-color: #333333;
+    --border-color: #dee2e6;
+    --hover-color: #0056b3;
+    
+    /* Component Colors */
+    --card-bg: #ffffff;
+    --input-bg: #ffffff;
+    --modal-bg: #ffffff;
+    --tooltip-bg: #000000;
+    
+    /* Text Colors */
+    --text-muted: #6c757d;
+    --text-light: #f8f9fa;
+    --text-dark: #212529;
+    
+    /* Fonts */
+    --font-family-sans: 'Inter', sans-serif;
+    --font-family-display: 'Playfair Display', serif;
+    
+    /* Transitions */
+    --transition-speed: 0.3s;
+    --transition-timing: ease;
+}
+
+/* Dark mode variables */
+.dark-mode {
+    /* Base Colors */
+    --background-color: #1a1a1a;
+    --text-color: #ffffff;
+    --border-color: #404040;
+    
+    /* Component Colors */
+    --card-bg: #2d2d2d;
+    --input-bg: #333333;
+    --modal-bg: #2d2d2d;
+    --tooltip-bg: #ffffff;
+    
+    /* Text Colors */
+    --text-muted: #a0a0a0;
+    --text-light: #ffffff;
+    --text-dark: #e0e0e0;
+    
+    /* Adjusted Component Colors */
+    --secondary-color: #a0a0a0;
+    --hover-color: #3d8bfd;
+}
+
+/* Global Styles */
+body {
+    font-family: var(--font-family-sans);
+    background-color: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+/* Card Styles */
+.card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5rem;
+    transition: transform 0.2s, box-shadow 0.2s, background-color 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+/* Form Styles */
+.form-control {
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 0.5rem 0.75rem;
+    width: 100%;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    outline: none;
+}
+
+/* Button Styles */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: var(--hover-color);
+    transform: translateY(-1px);
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-family-display);
+    margin-bottom: 1rem;
+    color: var(--text-color);
+}
+
+/* Utility Classes */
+.mb-4 {
+    margin-bottom: 1.5rem;
+}
+
+.text-center {
+    text-align: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 0.5rem;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+}

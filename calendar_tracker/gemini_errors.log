@@ -1,0 +1,32 @@
+[2025-03-23 05:13:52] Starting fresh error log
+[2025-03-23 05:13:52] TimeWise Configuration:
+- Mode: Fallback (until valid API key is provided)
+- Database: SQLite
+- Tables: Initializing...
+- Environment: Development
+
+[2025-03-23 05:13:52] Initialization:
+- Calendar support: Enabled
+- Chat support: Enabled (Fallback mode)
+- Error logging: Enabled
+[2025-03-23 05:16:57.978784] Error initializing Gemini AI: Unable to access Gemini API models
+[2025-03-23 05:17:03.222257] Error initializing Gemini AI: Unable to access Gemini API models
+[2025-03-23 05:21:58.259342] Error initializing Gemini AI: Unable to access Gemini API models
+[2025-03-23 05:22:03.186178] Error initializing Gemini AI: Unable to access Gemini API models
+[2025-03-23 05:34:01.521913] Error initializing Gemini AI: Unable to access Gemini API models
+[2025-03-23 05:44:03.974491] Error initializing Gemini AI: Unable to access Gemini API models
+[2025-03-23 05:44:10.046883] Error initializing Gemini AI: Unable to access Gemini API models
+[2025-03-23 05:53:54.487134] Error initializing Gemini AI: Unable to access Gemini API models
+[2025-03-23 05:53:59.226026] Error initializing Gemini AI: Unable to access Gemini API models
+[2025-03-23 06:05:11.982483] Error initializing Gemini AI: Unable to access Gemini API models
+[2025-03-23 06:05:17.008766] Error initializing Gemini AI: Unable to access Gemini API models
+[2025-03-23 06:08:40.615455] Error initializing Gemini AI: Unable to access Gemini API models
+[2025-03-23 06:08:46.260281] Error initializing Gemini AI: Unable to access Gemini API models
+[2025-03-23 06:12:55.754877] Error initializing Gemini AI: Unable to access Gemini API models
+[2025-03-23 06:13:02.216916] Error initializing Gemini AI: Unable to access Gemini API models
+[2025-03-23 07:14:14.834580] Error initializing Gemini AI: Unable to access Gemini API models
+[2025-03-23 07:14:19.815483] Error initializing Gemini AI: Unable to access Gemini API models
+[2025-03-23 07:20:10.134023] Error initializing Gemini AI: Unable to access Gemini API models
+[2025-03-23 07:20:15.293189] Error initializing Gemini AI: Unable to access Gemini API models
+[2025-03-23 07:30:17.947339] Error initializing Gemini AI: Unable to access Gemini API models
+[2025-03-23 07:30:19.820403] Error initializing Gemini AI: Unable to access Gemini API models
